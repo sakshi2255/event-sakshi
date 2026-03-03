@@ -34,7 +34,7 @@ const StaffMyEventsTab = ({ events, loading }) => {
             <div style={{ marginTop: '15px', borderTop: '1px solid #eee', paddingTop: '10px' }}>
               <button 
                 className="event-card-btn"
-                style={{ backgroundColor: '#64748b' }} // Neutral color for view-only
+                 // Neutral color for view-only
                 disabled
               >
                 Role: Event Staff

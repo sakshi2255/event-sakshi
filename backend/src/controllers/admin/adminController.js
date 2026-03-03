@@ -2,41 +2,73 @@ const pool = require("../../config/db");
 const logService = require("../../services/admin/logService");
 
 
+// const getActivityLogs = async (req, res) => {
+//   try {
+//     const { search, action } = req.query;
+    
+//     // Join with users table to show the Admin's name instead of just the ID
+//     let query = `
+//       SELECT al.*, u.full_name as admin_name 
+//       FROM activity_logs al
+//       LEFT JOIN users u ON al.admin_id = u.id 
+//       WHERE 1=1`;
+    
+//     const params = [];
+
+//     // Filter by details or admin name
+//     if (search) {
+//       params.push(`%${search}%`);
+//       query += ` AND (al.details ILIKE $${params.length} OR u.full_name ILIKE $${params.length})`;
+//     }
+
+//     // Filter by specific action type (e.g., UPDATE_USER_ROLE)
+//     if (action) {
+//       params.push(action);
+//       query += ` AND al.action_type = $${params.length}`;
+//     }
+
+//     query += ` ORDER BY al.created_at DESC`;
+
+//     const result = await pool.query(query, params);
+//     res.status(200).json(result.rows);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+// --- Dashboard Stats Logic ---
+// Logic: Added to support the SuperAdmin.jsx dashboard we fixed earlier
+
+
+// backend/src/controllers/admin/adminController.js
 const getActivityLogs = async (req, res) => {
   try {
     const { search, action } = req.query;
-    
-    // Join with users table to show the Admin's name instead of just the ID
     let query = `
-      SELECT al.*, u.full_name as admin_name 
+      SELECT al.*, u.full_name as admin_name, u.role as admin_role, t.full_name as target_name 
       FROM activity_logs al
       LEFT JOIN users u ON al.admin_id = u.id 
+      LEFT JOIN users t ON al.target_id = t.id
       WHERE 1=1`;
-    
     const params = [];
 
-    // Filter by details or admin name
     if (search) {
       params.push(`%${search}%`);
-      query += ` AND (al.details ILIKE $${params.length} OR u.full_name ILIKE $${params.length})`;
+      query += ` AND (al.details ILIKE $${params.length} OR u.full_name ILIKE $${params.length} OR t.full_name ILIKE $${params.length})`;
     }
-
-    // Filter by specific action type (e.g., UPDATE_USER_ROLE)
     if (action) {
       params.push(action);
       query += ` AND al.action_type = $${params.length}`;
     }
 
     query += ` ORDER BY al.created_at DESC`;
-
     const result = await pool.query(query, params);
     res.status(200).json(result.rows);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-// --- Dashboard Stats Logic ---
-// Logic: Added to support the SuperAdmin.jsx dashboard we fixed earlier
+
+
 const getStats = async (req, res) => {
     try {
         const userCount = await pool.query("SELECT COUNT(*) FROM users");

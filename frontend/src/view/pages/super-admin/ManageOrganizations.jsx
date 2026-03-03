@@ -6,6 +6,9 @@ import '../../styles/Management.css';
 const ManageOrganizations = () => {
   const [orgs, setOrgs] = useState([]);
   const [editId, setEditId] = useState(null);
+  // --- NEW STATES FOR SEARCH AND FILTER ---
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All');
   
   const initialFormState = { 
     name: '', type: 'College', email: '', phone: '', 
@@ -24,9 +27,20 @@ const ManageOrganizations = () => {
 
   useEffect(() => { loadOrgs(); }, []);
 
+  // --- UPDATED SEARCH & FILTER LOGIC ---
+  const filteredOrgs = orgs.filter(o => {
+    const matchesSearch = 
+      o.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.city?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesType = filterType === 'All' || o.type === filterType;
+    
+    return matchesSearch && matchesType;
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Safety check: Ensure we are only updating, never creating
     if (!editId) return; 
 
     try {
@@ -34,7 +48,7 @@ const ManageOrganizations = () => {
       toast.success("Institution updated successfully");
       
       setFormData(initialFormState);
-      setEditId(null); // This hides the form again
+      setEditId(null); 
       loadOrgs();
     } catch (err) {
       toast.error(err.response?.data?.message || "Update failed");
@@ -46,7 +60,6 @@ const ManageOrganizations = () => {
       try {
         await api.delete(`/organizations/${id}`);
         toast.success("Deleted successfully");
-        // If the admin deletes the organization they are currently editing, close the form
         if (editId === id) {
           setEditId(null);
           setFormData(initialFormState);
@@ -54,13 +67,13 @@ const ManageOrganizations = () => {
         loadOrgs();
       } catch (err) {
         console.error("Delete Error:", err);
-        toast.error("Delete failed. Check backend console.");
+        toast.error("Delete failed.");
       }
     }
   };
 
+  // --- PERMANENT FIX FOR PRE-FILLING ---
   const handleEditInit = (org) => {
-    setEditId(org.id); // This triggers the form to appear
     setFormData({ 
       name: org.name || '', 
       type: org.type || 'College',
@@ -72,17 +85,43 @@ const ManageOrganizations = () => {
       pincode: org.pincode || '',
       country: org.country || ''
     });
+    setEditId(org.id);
+    // Ensure view stays at top when editing starts
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="db-container">
       <h2 className="db-title">Manage Institutions</h2>
+
+      {/* --- NEW SEARCH AND FILTER UI --- */}
+      <div className="mgmt-card" style={{ marginBottom: '25px', display: 'flex', gap: '15px' }}>
+        <input 
+          className="mgmt-input" 
+          placeholder="🔍 Search by Name, Email or City..." 
+          style={{ marginBottom: 0, flex: 2 }}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select 
+          className="mgmt-input" 
+          style={{ marginBottom: 0, flex: 1 }}
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+        >
+          <option value="All">All Types</option>
+          <option value="College">College</option>
+          <option value="University">University</option>
+          <option value="School">School</option>
+          <option value="Institute">Institute</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
       <div className="mgmt-flex-container">
-        
-        {/* CONDITIONAL RENDERING: Form only exists if editId is NOT null */}
         {editId && (
-          <form onSubmit={handleSubmit} className="mgmt-card" style={{ flex: 1, maxHeight: '85vh', overflowY: 'auto' }}>
-            <h3 style={{marginBottom: '15px'}}>Edit Institution</h3>
+          <form onSubmit={handleSubmit} className="mgmt-card" style={{ flex: 1, maxHeight: '85vh', overflowY: 'auto', textAlign: 'center' }}>
+            <h3 style={{marginBottom: '25px'}}>Edit Institution</h3>
             
             <input className="mgmt-input" placeholder="Institution Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
             
@@ -98,29 +137,29 @@ const ManageOrganizations = () => {
             <input type="tel" className="mgmt-input" placeholder="Phone Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required />
             <input type="text" className="mgmt-input" placeholder="Address" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} required />
             
-            <div style={{display: 'flex', gap: '10px'}}>
+            <div style={{display: 'flex', gap: '15px'}}>
               <input type="text" className="mgmt-input" placeholder="City" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} required style={{flex: 1}} />
               <input type="text" className="mgmt-input" placeholder="State" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} required style={{flex: 1}} />
             </div>
 
-            <div style={{display: 'flex', gap: '10px'}}>
+            <div style={{display: 'flex', gap: '15px'}}>
               <input type="text" className="mgmt-input" placeholder="Pincode" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} required style={{flex: 1}} />
               <input type="text" className="mgmt-input" placeholder="Country" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} required style={{flex: 1}} />
             </div>
 
-            <button type="submit" className="mgmt-btn" style={{marginTop: '10px'}}>
+            {/* --- UPDATED BUTTON UI TO PILL DESIGN --- */}
+            <button type="submit" className="update-pill-btn">
               Update Institution
             </button>
             
-            <button type="button" onClick={() => {setEditId(null); setFormData(initialFormState);}} className="mgmt-cancel-btn" style={{width: '100%', marginTop: '10px', background: '#f1f5f9', border: 'none', padding: '10px', borderRadius: '8px', cursor: 'pointer'}}>
+            <button type="button" onClick={() => {setEditId(null); setFormData(initialFormState);}} className="mgmt-cancel-btn" style={{width: '100%', marginTop: '15px', background: '#f1f5f9', border: 'none', padding: '10px', borderRadius: '12px', cursor: 'pointer', color: '#64748b'}}>
               Cancel
             </button>
           </form>
         )}
 
-        {/* List Table: Takes up full width when form is hidden */}
         <div className="mgmt-card" style={{ flex: editId ? 2 : 1 }}>
-          <h3 style={{marginBottom: '15px', color: '#04befe'}}>Registered Institutions</h3>
+          <h3 style={{marginBottom: '15px', color: '#04befe'}}>Registered Institutions ({filteredOrgs.length})</h3>
           <div style={{overflowX: 'auto'}}>
             <table className="mgmt-table">
               <thead>
@@ -132,13 +171,13 @@ const ManageOrganizations = () => {
                 </tr>
               </thead>
               <tbody>
-                {orgs.map(o => (
+                {filteredOrgs.map(o => (
                   <tr key={o.id}>
                     <td className="mgmt-td">{o.name}</td>
                     <td className="mgmt-td">{o.type}</td>
                     <td className="mgmt-td">{o.city}, {o.country}</td>
                     <td className="mgmt-td">
-                      <button onClick={() => handleEditInit(o)} style={{color: '#04befe', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '10px'}}>✎ Edit</button>
+                      <button onClick={() => handleEditInit(o)} className="mgmt-edit-link" style={{marginRight: '10px'}}>✎ Edit</button>
                       <button onClick={() => handleDelete(o.id)} style={{color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold'}}>🗑 Delete</button>
                     </td>
                   </tr>

@@ -206,32 +206,35 @@ const handleLifecycleAction = async (action) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
-            <button type="button" className="submit-btn" onClick={handleUpdate} disabled={isSubmitting} >
-              {isSubmitting ? "Updating..." : "Save Changes"}
-            </button>
-          
-            <button
-              type="button"
-              className="mgmt-btn"
-              style={{
-                flex: 1,
-                background: '#f59e0b',
-                color: '#fff',
-                borderRadius: '10px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-              onClick={() => handleLifecycleAction('archive')}
-              disabled={isSubmitting}
-            >
-              Archive
-            </button>
-            <button type="button" className="reject-btn" onClick={handleSoftDelete} disabled={isSubmitting} style={{ flex: 1 }}>
-              Delete
-            </button>
-          </div>
+         {/* --- Replace the button section at the bottom of UpdateEventTab.jsx --- */}
+<div className="form-actions">
+  <button 
+    type="button" 
+    className="submit-btn" 
+    onClick={handleUpdate} 
+    disabled={isSubmitting}
+  >
+    {isSubmitting ? "Updating..." : "Save Changes"}
+  </button>
+
+  <button
+    type="button"
+    className="archive-btn" // New specific class for Archive
+    onClick={() => handleLifecycleAction('archive')}
+    disabled={isSubmitting}
+  >
+    Archive
+  </button>
+
+  <button 
+    type="button" 
+    className="reject-btn" 
+    onClick={handleSoftDelete} 
+    disabled={isSubmitting}
+  >
+    Delete
+  </button>
+</div>
         </form>
       )}
     </div>

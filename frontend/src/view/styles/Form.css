@@ -154,3 +154,59 @@
   cursor: pointer;
   color: var(--slate-light);
 }
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  width: 100%;
+}
+
+
+.form-actions button {
+  flex: 1; /* This makes all buttons exactly the same width */
+  height: 50px; /* Standardized height */
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Specific colors for each action */
+.form-actions .submit-btn {
+  background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-teal-dark) 100%);
+  color: #fff;
+  margin-top: 0; /* Resetting your existing margin-top */
+}
+
+.form-actions .archive-btn {
+  background-color: #f59e0b; /* Amber/Orange */
+  color: #fff;
+}
+
+.form-actions .reject-btn {
+  background-color: #ef4444; /* Red */
+  color: #fff;
+}
+
+/* Hover effects for professionalism */
+.form-actions button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.form-actions button:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Mobile Responsiveness for buttons */
+@media (max-width: 600px) {
+  .form-actions {
+    flex-direction: column; /* Stack buttons on small screens */
+  }}

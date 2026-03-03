@@ -12,14 +12,29 @@ const createLog = async (adminId, actionType, targetId, details) => {
     }
 };
 
+// const getLogs = async () => {
+//     const res = await pool.query(`
+//         SELECT l.*, u.email as admin_email 
+//         FROM activity_logs l 
+//         JOIN users u ON l.admin_id = u.id 
+//         ORDER BY l.created_at DESC LIMIT 100
+//     `);
+//     return res.rows;
+// };
+// backend/src/services/admin/logService.js
 const getLogs = async () => {
     const res = await pool.query(`
-        SELECT l.*, u.email as admin_email 
+        SELECT 
+            l.*, 
+            u.full_name as admin_name, 
+            u.role as admin_role,
+            t.full_name as target_name
         FROM activity_logs l 
         JOIN users u ON l.admin_id = u.id 
-        ORDER BY l.created_at DESC LIMIT 100
+        LEFT JOIN users t ON l.target_id = t.id
+        ORDER BY l.created_at DESC 
+        LIMIT 100
     `);
     return res.rows;
 };
-
 module.exports = { createLog, getLogs };

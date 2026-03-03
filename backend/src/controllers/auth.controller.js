@@ -4,7 +4,7 @@ const ROLES = require("../utils/roles");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
-
+const logService = require("../services/admin/logService");
 /* =========================
    REGISTER (WITH EMAIL VERIFICATION)
    ========================= */
@@ -46,7 +46,7 @@ const register = async (req, res) => {
       subject: "Verify your email - SOEMS",
       text: `Welcome to SOEMS!\n\nPlease verify your email by clicking the link below:\n\n${verifyLink}`,
     });
-
+await logService.createLog(user.id, 'USER_REGISTER', null, `New account registered as ${role}`);
     res.status(201).json({
       message: "Registration successful. Please verify your email.",
     });
@@ -131,7 +131,7 @@ const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
+await logService.createLog(user.id, 'USER_LOGIN', null, `User logged in successfully`);
     res.status(200).json({
       token,
       user: {

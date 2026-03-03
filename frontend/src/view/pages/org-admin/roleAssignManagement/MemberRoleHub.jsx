@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MemberExplorerTab from './tabs/MemberExplorerTab';
 import AssignRolesTab from './tabs/AssignRolesTab';
-// import StaffManagementTab from './tabs/StaffManagementTab';
+import StaffManagementTab from './tabs/StaffManagementTab';
 import "../../../styles/GlobalHub.css";
 
 const MemberRoleHub = () => {
@@ -10,7 +10,7 @@ const MemberRoleHub = () => {
   const navCards = [
     { id: 'explorer', label: 'Role Explorer' },
     { id: 'assign', label: 'Assign Manager' },
-    { id: 'staff', label: 'Staff Management' }
+    { id: 'staff', label: 'Staff Members' }
   ];
 
   return (

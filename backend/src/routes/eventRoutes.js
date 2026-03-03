@@ -16,7 +16,7 @@ router.get("/org-stats", authenticate, authorize(["ORG_ADMIN"]), eventController
 router.get(
   "/my-events", 
   authenticate, 
-  authorize(["ORG_ADMIN", "EVENT_MANAGER"]), 
+  authorize(["ORG_ADMIN", "EVENT_MANAGER","EVENT_STAFF"]), 
   eventController.getMyEvents
 );
 router.get("/trash", authenticate, authorize(["ORG_ADMIN"]), eventController.getTrashEvents);
@@ -55,16 +55,14 @@ router.post("/assign-tasks-final", authenticate, authorize(["ORG_ADMIN", "EVENT_
 router.get("/:eventId/tasks", authenticate, taskController.getEventTasks);
 router.patch("/tasks/:taskId/status", authenticate, taskController.updateTaskStatus);
 
-// --- Staff Specific ---
-router.get("/staff-stats", authenticate, authorize(["EVENT_STAFF"]), managerStaffCtrl.getStaffStats);
-// Add under the "Staff Specific" section in backend/src/routes/eventRoutes.js
+/// Staff Specific Dashboard Stats
+  router.get("/staff-stats", authenticate, authorize(["EVENT_STAFF"]), managerStaffCtrl.getStaffStats);
 
-// 1. View assigned events
+// Staff My Assignments Data
 router.get("/assigned-events", authenticate, authorize(["EVENT_STAFF"]), managerStaffCtrl.getStaffAssignedEvents);
 
-// 2. View Team Details (Read-only for staff)
+// Staff Team Details (Read-only)
 router.get("/staff/event-team", authenticate, authorize(["EVENT_STAFF"]), managerStaffCtrl.getStaffList);
-
 // 3. View Registrations (Read-only for staff)
 router.get("/staff/:eventId/registrations", authenticate, authorize(["EVENT_STAFF"]), eventController.getEventRegistrations);
 module.exports = router;

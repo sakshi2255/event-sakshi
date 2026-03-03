@@ -118,7 +118,7 @@ const removeStaff = async (req, res) => {
     // 2. UPDATE user role back to 'USER'
     // This ensures they disappear from the 'Assign Staff' dropdown
     await pool.query("UPDATE users SET role = 'USER' WHERE id = $1", [id]);
-
+await logService.createLog(req.user.id, 'REMOVE_STAFF', Number(id), `Removed staff member and reverted to USER role`);
     res.status(200).json({ 
       success: true, 
       message: "Staff member fully reverted to User and removed from all teams." 

@@ -40,7 +40,7 @@ const StaffRegistrationsTab = () => {
           {events.map(event => (
             <div key={event.id} className="event-card" onClick={() => handleCardClick(event)} style={{cursor:'pointer'}}>
               <h3 className="event-title">{event.title}</h3>
-              <p className="helper-text">Click to view attendees</p>
+              <p className="helper-text">View Registrations</p>
             </div>
           ))}
         </div>

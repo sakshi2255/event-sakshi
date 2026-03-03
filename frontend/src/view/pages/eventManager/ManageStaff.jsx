@@ -82,11 +82,9 @@ const handleRemoveStaff = async (id) => {
 };
   return (
     <div className="manage-staff-page-container">
-      <div className="manage-staff-sidebar">
-        
-      </div>
+      
 
-      <div className="manage-staff-main" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="manage-staff-main" style={{ maxWidth: '1000px', margin: '0 auto' }}>
         
         <div className="manage-staff-header">
           <h2>Manage Staff</h2>

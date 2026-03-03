@@ -8,6 +8,7 @@ const createTask = async (req, res) => {
       "INSERT INTO tasks (title, description, status, event_id, assigned_to) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       [title, description, status || 'todo', event_id, assigned_to]
     );
+    await logService.createLog(req.user.id, 'CREATE_TASK', Number(event_id), `Created task: ${title}`);
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -29,6 +30,7 @@ const updateTaskStatus = async (req, res) => {
     const { taskId } = req.params;
     const { status } = req.body;
     await pool.query("UPDATE tasks SET status = $1 WHERE id = $2", [status, taskId]);
+    await logService.createLog(req.user.id, 'UPDATE_TASK', Number(taskId), `Task status updated to ${status}`);
     res.json({ success: true, message: "Status updated" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

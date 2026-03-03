@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../controller/auth/ProtectedRoute";
 import RoleProtectedRoute from "../controller/auth/RoleProtectedRoute";
-
+import Unauthorized from "../view/pages/Unauthorized";
 
 import PlatformGovernance from "../view/pages/super-admin/PlatformGovernance";
 import PlatformSettings from "../view/pages/super-admin/PlatformSettings";
@@ -35,7 +35,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
-
+<Route path="/unauthorized" element={<Unauthorized />} />
       {/* SUPER ADMIN ROUTES */}
       <Route path="/dashboard/super-admin" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={["SUPER_ADMIN"]}><MainLayout><SuperAdmin /></MainLayout></RoleProtectedRoute></ProtectedRoute>} />
       <Route path="/superadmin/organizations" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={["SUPER_ADMIN"]}><MainLayout><ManageOrganizations /></MainLayout></RoleProtectedRoute></ProtectedRoute>} />
@@ -67,44 +67,49 @@ const AppRoutes = () => {
   </ProtectedRoute>
 } />
       {/* EVENT STAFF & USER ROUTES */}
-     <Route path="/dashboard/user" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={["USER"]}><MainLayout><UserDashboard /></MainLayout></RoleProtectedRoute></ProtectedRoute>} />  <Route path="/dashboard/user" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={["USER"]}><MainLayout><UserDashboard /></MainLayout></RoleProtectedRoute></ProtectedRoute>} />
-<Route 
-  path="/staff/event-hub" 
+    {/* EVENT STAFF & USER ROUTES */}
+      <Route 
+        path="/dashboard/user" 
+        element={
+          <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={["USER"]}>
+              <MainLayout><UserDashboard /></MainLayout>
+            </RoleProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/staff/event-hub" 
+        element={
+          <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={["EVENT_STAFF"]}>
+              <MainLayout><StaffEventHub /></MainLayout>
+            </RoleProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/dashboard/event-staff" 
+        element={
+          <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={["EVENT_STAFF"]}>
+              <MainLayout><EventStaffDashboard /></MainLayout>
+            </RoleProtectedRoute>
+          </ProtectedRoute>
+        } 
+      />
+      {/* Add this inside the <Routes> block in AppRoutes.jsx */}
+<Route
+  path="/profile"
   element={
     <ProtectedRoute>
-      <RoleProtectedRoute allowedRoles={['EVENT_STAFF']}>
-        <MainLayout>
-          <StaffEventHub />
-        </MainLayout>
-      </RoleProtectedRoute>
-    </ProtectedRoute>
-  } 
-/>
-
-{/* Unified Staff Dashboard Route */}
-<Route 
-  path="/dashboard/event-staff" 
-  element={
-    <ProtectedRoute>
-      <RoleProtectedRoute allowedRoles={['EVENT_STAFF']}>
-        <MainLayout>
-          <EventStaffDashboard />
-        </MainLayout>
-      </RoleProtectedRoute>
-    </ProtectedRoute>
-  } 
-/>
-
-{/* Staff Dashboard Route */}
-<Route 
-  path="/dashboard/event-staff" 
-  element={
-    <ProtectedRoute allowedRoles={['EVENT_STAFF']}>
       <MainLayout>
-        <EventStaffDashboard />
+        <Profile />
       </MainLayout>
     </ProtectedRoute>
-  } 
+  }
 />
       <Route path="/" element={<Navigate to="/auth" replace />} />
     </Routes>

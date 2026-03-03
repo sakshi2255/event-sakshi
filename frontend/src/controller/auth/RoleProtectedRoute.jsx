@@ -8,7 +8,12 @@ const RoleProtectedRoute = ({ allowedRoles, children }) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!allowedRoles.includes(user.role)) {
+  // Force both to uppercase to prevent "event_staff" !== "EVENT_STAFF" errors
+  const userRole = user?.role?.toUpperCase();
+  const normalizedAllowedRoles = allowedRoles.map(r => r.toUpperCase());
+
+  if (!normalizedAllowedRoles.includes(userRole)) {
+    console.error(`Access Denied. User role: ${userRole}. Required: ${normalizedAllowedRoles}`);
     return <Navigate to="/unauthorized" replace />;
   }
 

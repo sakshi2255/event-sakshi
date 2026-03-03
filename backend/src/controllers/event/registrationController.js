@@ -1,5 +1,5 @@
 const pool = require("../../config/db");
-
+const logService = require("../../services/admin/logService");
 const eventService = require("../../services/event/event.service");
 
 const registerForEvent = async (req, res) => {
@@ -8,7 +8,7 @@ const registerForEvent = async (req, res) => {
       req.user,
       req.body.eventId
     );
-
+await logService.createLog(req.user.id, 'REGISTER_FOR_EVENT', Number(req.body.eventId), `User registered for event`);
     res.status(201).json(result);
   } catch (error) {
     if (error.message.includes("approved")) {
