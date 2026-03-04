@@ -89,7 +89,7 @@ const register = async (req, res) => {
     });
 
     const verifyLink = `${process.env.BACKEND_URL}/api/auth/verify-email?token=${verificationToken}`;
-    await sendEmail({
+     sendEmail({
       to: email,
       subject: "Verify your email - SOEMS",
       text: `Welcome to SOEMS!\n\nPlease verify your email by clicking the link below:\n\n${verifyLink}`,

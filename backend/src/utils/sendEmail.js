@@ -1,10 +1,10 @@
 const nodemailer = require("nodemailer");
 
-const sendEmail = async ({ to, subject, text }) => {
+const sendEmail = async ({ to, subject, text, html }) => {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
-    secure: false,
+    secure: false, // Port 587 usually requires secure: false
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -15,7 +15,8 @@ const sendEmail = async ({ to, subject, text }) => {
     from: process.env.EMAIL_FROM,
     to,
     subject,
-    text,
+    text, // Fallback for email clients that don't support HTML
+    html, // The professional HTML template
   });
 };
 
