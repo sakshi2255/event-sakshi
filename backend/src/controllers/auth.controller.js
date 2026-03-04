@@ -5,13 +5,63 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/sendEmail");
 const logService = require("../services/admin/logService");
+
 /* =========================
    REGISTER (WITH EMAIL VERIFICATION)
    ========================= */
+// const register = async (req, res) => {
+//   try {
+//     const { 
+//       full_name, email, password, role,
+//       org_name, org_type, org_email, org_phone,
+//       org_address, org_city, org_state, org_pincode, org_country 
+//     } = req.body;
+
+//     if (!full_name || !email || !password) {
+//       return res.status(400).json({ message: "All fields are required" });
+//     }
+
+//     const existingUser = await authService.findUserByEmail(email);
+//     if (existingUser) {
+//       return res.status(409).json({ message: "Email already exists" });
+//     }
+
+//     // Pass the role and org details to the service
+//     const { user, verificationToken } = await authService.createUser({
+//       full_name,
+//       email,
+//       password,
+//       role: role || 'USER', // Preserves ORG_ADMIN if selected
+//       orgData: role === 'ORG_ADMIN' ? {
+//         name: org_name, type: org_type, email: org_email, phone: org_phone,
+//         address: org_address, city: org_city, state: org_state, 
+//         pincode: org_pincode, country: org_country
+//       } : null
+//     });
+
+//     // Your original verification email logic
+//     const verifyLink = `${process.env.BACKEND_URL}/api/auth/verify-email?token=${verificationToken}`;
+
+//     await sendEmail({
+//       to: email,
+//       subject: "Verify your email - SOEMS",
+//       text: `Welcome to SOEMS!\n\nPlease verify your email by clicking the link below:\n\n${verifyLink}`,
+//     });
+// await logService.createLog(user.id, 'USER_REGISTER', null, `New account registered as ${role}`);
+//     res.status(201).json({
+//       message: "Registration successful. Please verify your email.",
+//     });
+//   } catch (error) {
+//     console.error("REGISTER ERROR:", error);
+//     res.status(500).json({ message: "Registration failed" });
+//   }
+// };
+
 const register = async (req, res) => {
   try {
     const { 
-      full_name, email, password, role,
+      full_name, email, password, role, 
+      organization_id, // TASK 9 Addition
       org_name, org_type, org_email, org_phone,
       org_address, org_city, org_state, org_pincode, org_country 
     } = req.body;
@@ -25,12 +75,12 @@ const register = async (req, res) => {
       return res.status(409).json({ message: "Email already exists" });
     }
 
-    // Pass the role and org details to the service
     const { user, verificationToken } = await authService.createUser({
       full_name,
       email,
       password,
-      role: role || 'USER', // Preserves ORG_ADMIN if selected
+      role: role || 'USER',
+      organization_id: role === 'USER' ? organization_id : null, // TASK 9 Logic
       orgData: role === 'ORG_ADMIN' ? {
         name: org_name, type: org_type, email: org_email, phone: org_phone,
         address: org_address, city: org_city, state: org_state, 
@@ -38,24 +88,20 @@ const register = async (req, res) => {
       } : null
     });
 
-    // Your original verification email logic
     const verifyLink = `${process.env.BACKEND_URL}/api/auth/verify-email?token=${verificationToken}`;
-
     await sendEmail({
       to: email,
       subject: "Verify your email - SOEMS",
       text: `Welcome to SOEMS!\n\nPlease verify your email by clicking the link below:\n\n${verifyLink}`,
     });
-await logService.createLog(user.id, 'USER_REGISTER', null, `New account registered as ${role}`);
-    res.status(201).json({
-      message: "Registration successful. Please verify your email.",
-    });
+
+    await logService.createLog(user.id, 'USER_REGISTER', null, `New account registered as ${role}`);
+    res.status(201).json({ message: "Registration successful. Please verify your email." });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
     res.status(500).json({ message: "Registration failed" });
   }
 };
-
 
 /* =========================
    MERGED REGISTER (WITH DUAL-TABLE INSERT)

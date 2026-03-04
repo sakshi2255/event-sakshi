@@ -31,9 +31,11 @@ import StaffEventHub from "../view/pages/eventStaff/StaffEventHub";
 import StaffRegistrationsTab from "../view/pages/eventStaff/tabs/StaffRegistrationsTab";
 import Profile from '../view/pages/profile'; 
 
+import VerifyEmail from "../view/pages/VerifyEmail";
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/auth" element={<AuthPage />} />
 <Route path="/unauthorized" element={<Unauthorized />} />
       {/* SUPER ADMIN ROUTES */}

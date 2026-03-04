@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/AuthStyles.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../model/auth/auth.context";
+import api from "../../services/api";
 
 import {
   loginUser,
@@ -11,6 +12,7 @@ import {
 
 const AuthPage = () => {
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [step, setStep] = useState(1); // Track registration steps
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -22,8 +24,13 @@ const AuthPage = () => {
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
-  const [regRole, setRegRole] = useState("USER"); // Added role state
+  const [regRole, setRegRole] = useState("USER");
+  const [selectedOrgId, setSelectedOrgId] = useState("");
+  const [organizations, setOrganizations] = useState([]);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  // Password Strength State
+  const [strength, setStrength] = useState({ label: "None", color: "#aaa", score: 0 });
 
   // Organization Specific State
   const [orgName, setOrgName] = useState("");
@@ -34,24 +41,48 @@ const AuthPage = () => {
   const [orgCity, setOrgCity] = useState("");
   const [orgState, setOrgState] = useState("");
   const [orgPincode, setOrgPincode] = useState("");
-  const [orgCountry, setOrgCountry] = useState("");
+  const [orgCountry, setOrgCountry] = useState("India");
+
+  // Fetch Organizations for Dropdown
+  useEffect(() => {
+    const fetchOrgs = async () => {
+      try {
+        const res = await api.get("/admin/organizations");
+        // Ensure we are setting an array even if the response structure varies
+        const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        setOrganizations(data);
+      } catch (err) {
+        console.error("Dropdown load failed. Check if /api/admin/organizations is public.");
+      }
+    };
+    if (isSignUpMode) fetchOrgs();
+  }, [isSignUpMode]);
+
+  // Password Strength Logic
+  const checkStrength = (pass) => {
+    let score = 0;
+    if (pass.length > 7) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+
+    const map = [
+      { label: "Too Short", color: "#e11d48" },
+      { label: "Weak", color: "#f59e0b" },
+      { label: "Fair", color: "#3b82f6" },
+      { label: "Good", color: "#47B599" },
+      { label: "Strong", color: "#16a34a" }
+    ];
+    setStrength(map[score]);
+  };
 
   /* ---------------- LOGIN ---------------- */
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const data = await loginUser({
-        email: loginEmail,
-        password: loginPassword,
-      });
-
-      login({
-        token: data.token,
-        user: data.user,
-      });
-
+      const data = await loginUser({ email: loginEmail, password: loginPassword });
+      login({ token: data.token, user: data.user });
       toast.success("Logged in successfully");
-
       const routes = {
         USER: "/dashboard/user",
         ORG_ADMIN: "/dashboard/org-admin",
@@ -59,7 +90,6 @@ const AuthPage = () => {
         EVENT_MANAGER: "/dashboard/event-manager",
         EVENT_STAFF: "/dashboard/event-staff"
       };
-      
       navigate(routes[data.user.role] || "/unauthorized");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message);
@@ -68,15 +98,20 @@ const AuthPage = () => {
 
   /* ---------------- REGISTER ---------------- */
   const handleRegister = async (e) => {
-    e.preventDefault();
-    setIsRegistering(true);
+    if (e) e.preventDefault();
+    
+    // Validations
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail)) return toast.error("Invalid email format");
+    if (strength.score < 2) return toast.error("Password is too weak");
+    if (regRole === "USER" && !selectedOrgId) return toast.error("Please select your institution");
 
-    // Construct merged payload
+    setIsRegistering(true);
     const payload = {
       full_name: regName,
       email: regEmail,
       password: regPassword,
       role: regRole,
+      organization_id: regRole === "USER" ? selectedOrgId : null
     };
 
     if (regRole === "ORG_ADMIN") {
@@ -96,13 +131,8 @@ const AuthPage = () => {
     try {
       await registerUser(payload);
       toast.success("Registration successful. Please verify your email.");
-
       setIsSignUpMode(false);
-      setRegName(""); setRegEmail(""); setRegPassword("");
-      setRegRole("USER");
-      // Reset Org Fields
-      setOrgName(""); setOrgEmail(""); setOrgPhone(""); setOrgAddress("");
-      setOrgCity(""); setOrgState(""); setOrgPincode(""); setOrgCountry("");
+      setStep(1);
     } catch (err) {
       toast.error(err.response?.data?.message || err.message);
     } finally {
@@ -119,7 +149,7 @@ const AuthPage = () => {
           <form className="sign-in-form" onSubmit={handleLogin}>
             <h2 className="title">Sign in</h2>
             <div className="input-field">
-              <i className="fas fa-user"></i>
+              <i className="fas fa-envelope"></i>
               <input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
             </div>
             <div className="input-field">
@@ -135,72 +165,78 @@ const AuthPage = () => {
 
           {/* ---------- SIGN UP ---------- */}
           <form className="sign-up-form" onSubmit={handleRegister}>
-            <h2 className="title">Sign up</h2>
+            <h2 className="title">{step === 1 ? "Join Us" : "Institute Details"}</h2>
 
-            <div className="input-field">
-              <i className="fas fa-user"></i>
-              <input type="text" placeholder="Full Name" value={regName} onChange={(e) => setRegName(e.target.value)} required />
-            </div>
-
-            <div className="input-field">
-              <i className="fas fa-envelope"></i>
-              <input type="email" placeholder="Email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
-            </div>
-
-            <div className="input-field">
-              <i className="fas fa-lock"></i>
-              <input type="password" placeholder="Password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
-            </div>
-
-            {/* Role Selection Dropdown */}
-            <div className="input-field">
-              <i className="fas fa-briefcase"></i>
-              <select 
-                value={regRole} 
-                onChange={(e) => setRegRole(e.target.value)} 
-                className="select-input" 
-                style={{width: '100%', background: 'none', border: 'none', outline: 'none', fontWeight: '600', color: '#333'}}
-              >
-                <option value="USER">Standard User</option>
-                <option value="ORG_ADMIN">Register an Institute</option>
-              </select>
-            </div>
-
-            {/* Conditional Org Fields with Scroll for UI Fit */}
-            {regRole === "ORG_ADMIN" && (
-              <div className="org-fields-container" style={{
-                maxHeight: '180px', 
-                overflowY: 'auto', 
-                width: '100%', 
-                padding: '5px', 
-                marginTop: '10px', 
-                borderTop: '1px solid #ccc'
-              }}>
-                <p style={{textAlign: 'left', margin: '10px 0', color: '#47B599', fontSize: '14px', fontWeight: 'bold'}}>Institution Details</p>
-                <div className="input-field"><i className="fas fa-building"></i><input type="text" placeholder="Institute Name" value={orgName} onChange={(e) => setOrgName(e.target.value)} required /></div>
+            {step === 1 ? (
+              <>
                 <div className="input-field">
-                  <i className="fas fa-university"></i>
-                  <select value={orgType} onChange={(e) => setOrgType(e.target.value)} style={{width: '100%', background: 'none', border: 'none', outline: 'none', color: '#333'}} required>
-                    <option value="College">College</option>
-                    <option value="University">University</option>
-                    <option value="School">School</option>
-                    <option value="Institute">Institute</option>
-                    <option value="Other">Other</option>
+                  <i className="fas fa-user"></i>
+                  <input type="text" placeholder="Full Name" value={regName} onChange={(e) => setRegName(e.target.value)} required />
+                </div>
+
+                <div className="input-field">
+                  <i className="fas fa-envelope"></i>
+                  <input type="email" placeholder="Email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} required />
+                </div>
+
+                <div className="input-field">
+                  <i className="fas fa-lock"></i>
+                  <input type="password" placeholder="Password" value={regPassword} onChange={(e) => { setRegPassword(e.target.value); checkStrength(e.target.value); }} required />
+                </div>
+                
+                {regPassword && (
+                  <p style={{ color: strength.color, fontSize: '11px', fontWeight: 'bold', marginBottom: '10px' }}>
+                    Security: {strength.label}
+                  </p>
+                )}
+
+                <div className="input-field">
+                  <i className="fas fa-briefcase"></i>
+                  <select value={regRole} onChange={(e) => setRegRole(e.target.value)} style={{width: '100%', border: 'none', background: 'none', outline: 'none'}}>
+                    <option value="USER">Standard User</option>
+                    <option value="ORG_ADMIN">Register an Institute</option>
                   </select>
                 </div>
-                <div className="input-field"><i className="fas fa-envelope-open-text"></i><input type="email" placeholder="Official Email" value={orgEmail} onChange={(e) => setOrgEmail(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-phone"></i><input type="tel" placeholder="Phone Number" value={orgPhone} onChange={(e) => setOrgPhone(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-map-marker-alt"></i><input type="text" placeholder="Address" value={orgAddress} onChange={(e) => setOrgAddress(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-city"></i><input type="text" placeholder="City" value={orgCity} onChange={(e) => setOrgCity(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-map"></i><input type="text" placeholder="State" value={orgState} onChange={(e) => setOrgState(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-thumbtack"></i><input type="text" placeholder="Pincode" value={orgPincode} onChange={(e) => setOrgPincode(e.target.value)} required /></div>
-                <div className="input-field"><i className="fas fa-globe"></i><input type="text" placeholder="Country" value={orgCountry} onChange={(e) => setOrgCountry(e.target.value)} required /></div>
+
+                {regRole === "USER" && (
+                  <div className="input-field">
+                    <i className="fas fa-university"></i>
+                    <select value={selectedOrgId} onChange={(e) => setSelectedOrgId(e.target.value)} style={{width: '100%', border: 'none', background: 'none'}} required>
+                      <option value="">-- Select Institution --</option>
+                      {organizations.map(org => <option key={org.id} value={org.id}>{org.name}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                <button type="button" className="signup btn" onClick={() => regRole === "ORG_ADMIN" ? setStep(2) : handleRegister()}>
+                  {regRole === "ORG_ADMIN" ? "Next Step" : "Create Account"}
+                </button>
+              </>
+            ) : (
+              <div className="institute-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%', maxWidth: '500px' }}>
+                <input className="mgmt-input" type="text" placeholder="Institute Name" value={orgName} onChange={e => setOrgName(e.target.value)} required />
+                <select className="mgmt-input" value={orgType} onChange={e => setOrgType(e.target.value)} required>
+                   <option value="College">College</option>
+                   <option value="University">University</option>
+                   <option value="School">School</option>
+                   <option value="Institute">Institute</option>
+                   <option value="Other">Other</option>
+                </select>
+                <input className="mgmt-input" type="email" placeholder="Official Email" value={orgEmail} onChange={e => setOrgEmail(e.target.value)} required />
+                <input className="mgmt-input" type="tel" placeholder="Phone" value={orgPhone} onChange={e => setOrgPhone(e.target.value)} required />
+                <input className="mgmt-input" type="text" placeholder="City" value={orgCity} onChange={e => setOrgCity(e.target.value)} required />
+                <input className="mgmt-input" type="text" placeholder="State" value={orgState} onChange={e => setOrgState(e.target.value)} required />
+                <input className="mgmt-input" type="text" placeholder="Pincode" value={orgPincode} onChange={e => setOrgPincode(e.target.value)} required />
+                <input className="mgmt-input" type="text" placeholder="Address"  value={orgAddress} onChange={e => setOrgAddress(e.target.value)} required />
+                
+                <div style={{gridColumn: '1 / span 2', display: 'flex', gap: '10px'}}>
+                   <button type="button" className="login btn" onClick={() => setStep(1)} style={{flex: 1, background: '#64748b'}}>Back</button>
+                   <button type="submit" className="signup btn" style={{flex: 2}} disabled={isRegistering}>
+                     {isRegistering ? "Registering..." : "Finalize"}
+                   </button>
+                </div>
               </div>
             )}
-
-            <button type="submit" className="signup btn solid" disabled={isRegistering}>
-              {isRegistering ? "Creating..." : "Sign up"}
-            </button>
 
             <p className="social-text">
               Already have an account?

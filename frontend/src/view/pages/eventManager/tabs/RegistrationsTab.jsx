@@ -66,117 +66,232 @@ const RegistrationsTab = () => {
     event.deleted_at === null
   );
 
-  return (
-    <div className="db-container">
+//   return (
+//     <div className="db-container">
       
-      {!selectedEvent ? (
-        /* =========================================
-           VIEW 1: EVENT CARDS GRID 
-           ========================================= */
-        <>
+//       {!selectedEvent ? (
+//         /* =========================================
+//            VIEW 1: EVENT CARDS GRID 
+//            ========================================= */
+//         <>
 
-          <div className="search-wrapper">
+//           <div className="search-wrapper">
+//             <input 
+//               type="text" 
+//               placeholder="Search events..." 
+//               className="mgmt-input"
+//               value={searchTerm}
+//               onChange={(e) => setSearchTerm(e.target.value)}
+//             />
+//           </div>
+
+//           <div className="event-grid">
+//             {filteredEvents.map(event => (
+//               <div key={event.id} className="event-card">
+                
+//                 <div className={`status-badge status-${event.status?.toLowerCase() || 'approved'}`}>
+//                   {event.status || 'APPROVED'}
+//                 </div>
+                
+//                 <h3 className="event-title">{event.title}</h3>
+//                 <p className="helper-text">📅 {new Date(event.event_date).toLocaleDateString()}</p>
+//                 <p className="helper-text">📍 {event.location || 'Venue TBD'}</p>
+                
+//                 {/* 🔥 This will now show the LIVE exact count for every card! 🔥 */}
+//                 <p className="helper-text" style={{ marginTop: '10px', fontWeight: 'bold' }}>
+//                   👥 Total Registered: {event.live_count || 0}
+//                 </p>
+
+//                 <div className="event-card-actions">
+//                   <button 
+//                     className={`event-card-btn ${selectedEvent?.id === event.id ? 'active' : ''}`}
+//                     onClick={() => handleCardClick(event)}
+//                   >
+//                     View Registrations
+//                   </button>
+//                 </div>
+
+//               </div>
+//             ))}
+            
+//             {filteredEvents.length === 0 && (
+//               <p className="helper-text">No events found.</p>
+//             )}
+//           </div>
+//         </>
+//       ) : (
+//         /* =========================================
+//            VIEW 2: REGISTRATION LIST TABLE 
+//            ========================================= */
+//         <>
+//           <div className="form-actions">
+//             <button className="back-btn" onClick={handleBackClick}>
+//               &larr; Back to Events
+//             </button>
+//           </div>
+
+//           <br />
+
+//           <div className="manage-staff-table-card">
+            
+//             <div className="table-header-flex">
+//               <h3 className="table-header-title">
+//                 Registrations for "{selectedEvent.title}"
+//               </h3>
+//               <span className="staff-chip">
+//                 Total: {registrations.length}
+//               </span>
+//             </div>
+
+//             {loadingRegs ? (
+//               <p className="helper-text" style={{ padding: '2rem', textAlign: 'center' }}>Loading attendees...</p>
+//             ) : (
+//               <table className="staff-table">
+//                 <thead>
+//                   <tr>
+//                     <th>Name</th>
+//                     <th>Email</th>
+//                     <th>Date Registered</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {registrations.map((reg, idx) => (
+//                     <tr key={idx}>
+//                       <td><strong>{reg.full_name}</strong></td>
+//                       <td>{reg.email}</td>
+//                       <td>{new Date(reg.registered_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+//                     </tr>
+//                   ))}
+                  
+//                   {registrations.length === 0 && (
+//                     <tr>
+//                       <td colSpan="3" className="helper-text" style={{ textAlign: 'center', padding: '2rem' }}>
+//                         No users have registered for this event yet.
+//                       </td>
+//                     </tr>
+//                   )}
+//                 </tbody>
+//               </table>
+//             )}
+//           </div>
+//         </>
+//       )}
+
+//     </div>
+//   );
+// };
+
+return (
+    <div className="db-container">
+      {!selectedEvent ? (
+        <>
+          {/* SEARCH WRAPPER */}
+          <div className="mgmt-card" style={{ marginBottom: '25px' }}>
             <input 
               type="text" 
-              placeholder="Search events..." 
+              placeholder="🔍 Search events to view registrations..." 
               className="mgmt-input"
+              style={{ marginBottom: 0 }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
+          {/* EVENT CARDS GRID */}
           <div className="event-grid">
             {filteredEvents.map(event => (
               <div key={event.id} className="event-card">
-                
                 <div className={`status-badge status-${event.status?.toLowerCase() || 'approved'}`}>
                   {event.status || 'APPROVED'}
                 </div>
                 
-                <h3 className="event-title">{event.title}</h3>
-                <p className="helper-text">📅 {new Date(event.event_date).toLocaleDateString()}</p>
-                <p className="helper-text">📍 {event.location || 'Venue TBD'}</p>
+                <h3 className="event-title" style={{ marginTop: '15px' }}>{event.title}</h3>
                 
-                {/* 🔥 This will now show the LIVE exact count for every card! 🔥 */}
-                <p className="helper-text" style={{ marginTop: '10px', fontWeight: 'bold' }}>
-                  👥 Total Registered: {event.live_count || 0}
-                </p>
-
-                <div className="event-card-actions">
-                  <button 
-                    className={`event-card-btn ${selectedEvent?.id === event.id ? 'active' : ''}`}
-                    onClick={() => handleCardClick(event)}
-                  >
-                    View Registrations
-                  </button>
+                <div style={{ margin: '12px 0' }}>
+                  <p className="helper-text">📅 {new Date(event.event_date).toLocaleDateString()}</p>
+                  <p className="helper-text">📍 {event.location || 'Venue TBD'}</p>
+                </div>
+                
+                <div className="status-badge status-blue" style={{ width: '100%', textAlign: 'center', marginBottom: '15px' }}>
+                  👥 Registered: {event.live_count || 0}
                 </div>
 
+                <button 
+                  className="update-pill-btn" 
+                  style={{ width: '100%', padding: '10px', fontSize: '14px' }}
+                  onClick={() => handleCardClick(event)}
+                >
+                  View Attendees
+                </button>
               </div>
             ))}
             
             {filteredEvents.length === 0 && (
-              <p className="helper-text">No events found.</p>
+              <div className="mgmt-card" style={{ textAlign: 'center', gridColumn: '1 / -1' }}>
+                <p className="helper-text">No matching events found.</p>
+              </div>
             )}
           </div>
         </>
       ) : (
-        /* =========================================
-           VIEW 2: REGISTRATION LIST TABLE 
-           ========================================= */
         <>
-          <div className="form-actions">
-            <button className="back-btn" onClick={handleBackClick}>
-              &larr; Back to Events
-            </button>
-          </div>
-
-          <br />
-
-          <div className="manage-staff-table-card">
-            
-            <div className="table-header-flex">
-              <h3 className="table-header-title">
-                Registrations for "{selectedEvent.title}"
-              </h3>
-              <span className="staff-chip">
-                Total: {registrations.length}
-              </span>
+          {/* REGISTRATION LIST TABLE */}
+          <div className="mgmt-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+              <div>
+                <h3 className="table-header-blue" style={{ margin: 0 }}>
+                  Event : {selectedEvent.title}
+                </h3><br />
+                <span className="type-subtext">Total Attendees: {registrations.length}</span>
+              </div>
+              <button className="mgmt-cancel-btn" onClick={() => setSelectedEvent(null)}>
+                &larr; Back to Events
+              </button>
             </div>
 
             {loadingRegs ? (
-              <p className="helper-text" style={{ padding: '2rem', textAlign: 'center' }}>Loading attendees...</p>
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                <p className="helper-text">Loading registrations...</p>
+              </div>
             ) : (
-              <table className="staff-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Date Registered</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrations.map((reg, idx) => (
-                    <tr key={idx}>
-                      <td><strong>{reg.full_name}</strong></td>
-                      <td>{reg.email}</td>
-                      <td>{new Date(reg.registered_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                    </tr>
-                  ))}
-                  
-                  {registrations.length === 0 && (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="mgmt-table">
+                  <thead>
                     <tr>
-                      <td colSpan="3" className="helper-text" style={{ textAlign: 'center', padding: '2rem' }}>
-                        No users have registered for this event yet.
-                      </td>
+                      <th className="mgmt-th">Registered Name</th>
+                      <th className="mgmt-th">Email Address</th>
+                      <th className="mgmt-th">Registration Date</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {registrations.map((reg, idx) => (
+                      <tr key={idx}>
+                        <td className="mgmt-td"><strong>{reg.full_name}</strong></td>
+                        <td className="mgmt-td">{reg.email}</td>
+                        <td className="mgmt-td">
+                          {new Date(reg.registered_at).toLocaleDateString('en-GB', { 
+                            day: '2-digit', 
+                            month: 'short', 
+                            year: 'numeric' 
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                    
+                    {registrations.length === 0 && (
+                      <tr>
+                        <td colSpan="3" className="mgmt-td" style={{ textAlign: 'center', padding: '40px' }}>
+                          <p className="helper-text">No users have registered for this event yet.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </>
       )}
-
     </div>
   );
 };
