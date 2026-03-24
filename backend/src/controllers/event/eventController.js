@@ -324,13 +324,21 @@ const getTrashEvents = async (req, res) => {
 const getAllApprovedEvents = async (req, res) => {
   try {
     const { search } = req.query; // Get search term from URL
+    const userOrgId = req.user.organization_id || req.user.org_id;
+    if (!userOrgId) {
+      return res.status(400).json({ message: "User organization context is missing." });
+    }
+
     let query = `
       SELECT e.*, o.name as organization_name 
       FROM events e
       JOIN organizations o ON e.org_id = o.id
-      WHERE e.status = 'approved' AND e.deleted_at IS NULL`;
-    
-    const params = [];
+      WHERE e.status = 'approved' 
+        AND e.deleted_at IS NULL 
+        AND e.org_id = $1`; 
+
+    // params[0] is now correctly linked to userOrgId
+    const params = [userOrgId];
 
     // Apply search filter if present
     if (search) {
@@ -402,8 +410,53 @@ const getEventRegistrations = async (req, res) => {
 };
 // Update your module.exports to include getEventRegistrations
 
+// Update by sakshi
+const toggleSaveEvent = async (req, res) => {
+  const { eventId } = req.body;
+  const userId = req.user.id;
 
-  
+  try {
+    // Check if already saved
+    const existing = await pool.query(
+      "SELECT id FROM saved_events WHERE user_id = $1 AND event_id = $2",
+      [userId, eventId]
+    );
+
+    if (existing.rows.length > 0) {
+      // Logic: If exists, remove it (Unsave)
+      await pool.query("DELETE FROM saved_events WHERE id = $1", [existing.rows[0].id]);
+      return res.status(200).json({ success: true, saved: false, message: "Removed from saved" });
+    } else {
+      // Logic: If not exists, add it (Save)
+      await pool.query(
+        "INSERT INTO saved_events (user_id, event_id) VALUES ($1, $2)",
+        [userId, eventId]
+      );
+      return res.status(200).json({ success: true, saved: true, message: "Saved to your list" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getSavedEvents = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await pool.query(
+      `SELECT e.*, o.name as organization_name 
+       FROM events e
+       JOIN organizations o ON e.org_id = o.id
+       JOIN saved_events s ON e.id = s.event_id
+       WHERE s.user_id = $1`,
+      [userId]
+    );
+    res.status(200).json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 module.exports = { 
   getAllEventsForModeration, 
   moderateEvent, 
@@ -419,6 +472,8 @@ module.exports = {
   getMyManagedEvents,
   getTrashEvents,
   getAdminAllEvents ,
-  getEventRegistrations
+  getEventRegistrations,
+  toggleSaveEvent,
+  getSavedEvents
   
 };

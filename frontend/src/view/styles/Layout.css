@@ -1,3 +1,11 @@
+/* --- GLOBAL RESET TO PREVENT HORIZONTAL SCROLL --- */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 /* Main Wrapper - Flex container for sidebar + content */
 .main-wrapper {
   display: flex;
@@ -5,17 +13,18 @@
   width: 100vw;
   background-color: #f1f5f9;
   overflow: hidden;
+  position: relative;
 }
 
-/* SIDEBAR - restored to exact original styling */
+/* SIDEBAR - Base Styling */
 .sidebar-base {
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
   box-shadow: 4px 0 20px rgba(0,0,0,0.05);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s ease;
+  z-index: 1000;
   height: 100%;
 }
 
@@ -34,6 +43,14 @@
   font-size: 22px;
   letter-spacing: -1px;
   margin: 0;
+}
+
+.sidebar-collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #64748b;
 }
 
 .sidebar-nav {
@@ -66,37 +83,14 @@
   margin-right: 12px;
 }
 
-/* SIDEBAR FOOTER & USER PROFILE */
 .sidebar-footer {
   border-top: 1px solid #f1f5f9;
   padding-top: 20px;
   margin-top: auto;
 }
 
-.user-brief {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  background-color: #47B599; /* Theme color */
-  color: #ffffff;
-  border-radius: 8px; /* Original square-rounded look */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.user-name { margin: 0; font-size: 14px; font-weight: 700; color: #1e293b; }
-.user-role { margin: 0; font-size: 10px; color: #94a3b8; text-transform: uppercase; }
-
-/* Logout Buttons - Restored light red background */
-.logout-btn-full {
+/* Logout Buttons */
+.logout-btn-full, .logout-btn-small {
   width: 100%;
   padding: 12px;
   background-color: #fff1f2;
@@ -110,23 +104,13 @@
   justify-content: center;
 }
 
-.logout-btn-small {
-  width: 100%;
-  padding: 12px;
-  background-color: #fff1f2;
-  color: #e11d48;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
 /* CONTENT CONTAINER & HEADER */
 .content-container {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  max-width: 100%;
 }
 
 .app-header {
@@ -155,4 +139,91 @@
   flex: 1;
   padding: 40px;
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* --- MOBILE DRAWER & TOGGLE LOGIC --- */
+
+.mobile-nav-toggle {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 1024px) {
+  .mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1100;
+    background: #47B599;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* Transform Sidebar into Drawer */
+  .sidebar-base {
+    position: fixed;
+    left: -280px; /* Hide off-screen */
+    top: 0;
+    width: 280px !important;
+    z-index: 1050;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+  }
+
+  .sidebar-base.show-mobile {
+    left: 0; /* Slide in when open */
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(2px);
+    z-index: 1040;
+  }
+
+  .sidebar-collapse-btn.desktop-only {
+    display: none;
+  }
+
+  .app-header {
+    padding: 0 20px 0 75px; /* Space for the toggle button */
+    height: 70px;
+  }
+
+  .main-scroll-area {
+    padding: 20px 15px;
+  }
+
+  /* Internal table scroll protection */
+  .mgmt-card, .event-card, .hub-workspace {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-right {
+    display: none; /* Hide name to save space */
+  }
+  
+  .app-header {
+    justify-content: flex-end;
+  }
+
+  .sidebar-logo-text {
+    font-size: 20px;
+  }
 }

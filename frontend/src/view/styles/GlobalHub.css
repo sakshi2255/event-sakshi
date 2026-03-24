@@ -70,36 +70,65 @@
 
 /* --- RESPONSIVE BREAKPOINTS --- */
 
-/* For Tablets and smaller Desktops */
-@media (max-width: 1024px) {
+/* --- ENHANCED RESPONSIVE MEDIA QUERIES FOR CENTRALIZED HUB --- */
+
+/* Tablet View (max-width: 768px) Updates */
+@media (max-width: 768px) {
   .org-hub-container {
-    padding: 20px 10px;
+    padding: 15px 8px; /* Tighter padding for tablet layout */
+    gap: 15px;
   }
+
+  .management-ribbon {
+    justify-content: center; /* Center cards for a symmetrical look on tablets */
+    gap: 12px;
+  }
+
+  .nav-card {
+    flex: 1 1 calc(33.33% - 12px); /* Three cards per row on tablets */
+    min-width: 100px;
+    height: 70px; /* Balance between sleeker desktop and bulky mobile */
+  }
+
   .hub-workspace {
-    padding: 25px;
+    min-height: 400px; /* Reduce height requirement for vertical space */
   }
 }
 
-/* Mobile View: Adjusting the Hub and Form Layout */
-@media (max-width: 768px) {
-  .management-ribbon {
+/* Phone View (max-width: 480px) */
+@media (max-width: 480px) {
+  .org-hub-container {
+    padding: 10px 5px;
     gap: 10px;
   }
-  
+
+  .management-ribbon {
+    gap: 8px;
+    padding: 0;
+  }
+
   .nav-card {
-    flex: 0 0 140px; /* Slightly smaller cards */
-    height: 90px;
+    flex: 1 1 calc(50% - 8px); /* Two cards per row for easy thumb access */
+    height: 65px;
+    border-radius: 10px;
+    padding: 5px;
+  }
+
+  .card-label {
+    font-size: 11px; /* Smaller text to prevent overflow in 2-column mobile grid */
+    line-height: 1.2;
   }
 
   .hub-workspace {
-    padding: 20px 15px;
-    border-width: 3px; /* Slightly thinner border on mobile */
-    border-radius: 15px;
+    padding: 20px 10px;
+    border-width: 2px; /* Thinner border to maximize internal content area */
+    border-radius: 12px;
+    min-height: 350px;
   }
 
-  /* Inheriting Form-specific mobile stacks */
+  /* Force elements to stack inside the hub */
   .form-row {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr !important;
+    gap: 15px;
   }
 }

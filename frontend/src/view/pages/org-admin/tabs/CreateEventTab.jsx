@@ -50,71 +50,132 @@ const CreateEventTab = ({ resumeId, clearResume }) => {
     }
   }, [resumeId]);
 
+// const handleAction = async (targetStatus) => {
+//     // Basic validation for required fields
+//     if (!formData.title || !formData.event_date || !formData.location) {
+//       toast.error("Please fill in the Title, Date, and Venue");
+//       return;
+//     }
+
+//     try {
+//       setIsSubmitting(true);
+      
+//       // Merge date and time strings for backend TIMESTAMP consistency
+//       const start_datetime = formData.start_time ? `${formData.event_date} ${formData.start_time}` : null;
+//       const end_datetime = formData.end_time ? `${formData.event_date} ${formData.end_time}` : null;
+
+//       // Construct the payload
+//       // targetStatus is placed AFTER ...formData to ensure it overrides any existing 'status' in the state
+//       const payload = {
+//         ...formData,
+//         start_datetime, 
+//         end_datetime,
+//         status: targetStatus, 
+//         capacity: formData.capacity ? Number(formData.capacity) : null,
+//       };
+
+//       if (resumeId) {
+//         // Use PUT to update the existing draft record in the database
+//         await api.put(`/events/${resumeId}`, payload);
+        
+//         // Success feedback based on the action taken
+//         toast.success(targetStatus === 'draft' ? "Draft Updated" : "Submitted for Approval");
+        
+//         // If the event is submitted for approval, clear the resume state in the Hub
+//         if (targetStatus !== 'draft' && clearResume) {
+//           clearResume();
+//         }
+//       } else {
+//         // Use POST to create a brand new event record
+//         await api.post('/events', payload);
+//         toast.success(targetStatus === 'draft' ? "Saved to Drafts" : "Submitted for Approval");
+//       }
+      
+//       // Reset the form fields only if the event was submitted (status: 'pending')
+//       if (targetStatus !== 'draft') {
+//         setFormData({
+//           title: '', 
+//           description: '', 
+//           event_type: '', 
+//           event_subtype: '',
+//           scope: 'CENTRAL', 
+//           location: '', 
+//           capacity: '', 
+//           poster_url: '',
+//           event_date: '', 
+//           start_time: '', 
+//           end_time: ''
+//         });
+//       }
+//     } catch (err) {
+//       // Provide specific error message from server if available
+//       toast.error(err.response?.data?.message || "Operation failed");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
 const handleAction = async (targetStatus) => {
-    // Basic validation for required fields
-    if (!formData.title || !formData.event_date || !formData.location) {
-      toast.error("Please fill in the Title, Date, and Venue");
-      return;
-    }
+  // Basic validation for required fields
+  if (!formData.title || !formData.event_date || !formData.location) {
+    toast.error("Please fill in the Title, Date, and Venue");
+    return;
+  }
 
-    try {
-      setIsSubmitting(true);
+  try {
+    setIsSubmitting(true);
+    
+    // Merge date and time strings for backend TIMESTAMP consistency
+    const start_datetime = formData.start_time ? `${formData.event_date} ${formData.start_time}` : null;
+    const end_datetime = formData.end_time ? `${formData.event_date} ${formData.end_time}` : null;
+
+    const payload = {
+      ...formData,
+      start_datetime, 
+      end_datetime,
+      status: targetStatus, 
+      capacity: formData.capacity ? Number(formData.capacity) : null,
+    };
+
+    if (resumeId) {
+      // Use PUT to update the existing draft record
+      await api.put(`/events/${resumeId}`, payload);
+      toast.success(targetStatus === 'draft' ? "Draft Updated" : "Submitted for Approval");
       
-      // Merge date and time strings for backend TIMESTAMP consistency
-      const start_datetime = formData.start_time ? `${formData.event_date} ${formData.start_time}` : null;
-      const end_datetime = formData.end_time ? `${formData.event_date} ${formData.end_time}` : null;
-
-      // Construct the payload
-      // targetStatus is placed AFTER ...formData to ensure it overrides any existing 'status' in the state
-      const payload = {
-        ...formData,
-        start_datetime, 
-        end_datetime,
-        status: targetStatus, 
-        capacity: formData.capacity ? Number(formData.capacity) : null,
-      };
-
-      if (resumeId) {
-        // Use PUT to update the existing draft record in the database
-        await api.put(`/events/${resumeId}`, payload);
-        
-        // Success feedback based on the action taken
-        toast.success(targetStatus === 'draft' ? "Draft Updated" : "Submitted for Approval");
-        
-        // If the event is submitted for approval, clear the resume state in the Hub
-        if (targetStatus !== 'draft' && clearResume) {
-          clearResume();
-        }
-      } else {
-        // Use POST to create a brand new event record
-        await api.post('/events', payload);
-        toast.success(targetStatus === 'draft' ? "Saved to Drafts" : "Submitted for Approval");
+      if (targetStatus !== 'draft' && clearResume) {
+        clearResume();
       }
-      
-      // Reset the form fields only if the event was submitted (status: 'pending')
-      if (targetStatus !== 'draft') {
-        setFormData({
-          title: '', 
-          description: '', 
-          event_type: '', 
-          event_subtype: '',
-          scope: 'CENTRAL', 
-          location: '', 
-          capacity: '', 
-          poster_url: '',
-          event_date: '', 
-          start_time: '', 
-          end_time: ''
-        });
-      }
-    } catch (err) {
-      // Provide specific error message from server if available
-      toast.error(err.response?.data?.message || "Operation failed");
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      // Use POST to create a brand new event record
+      await api.post('/events', payload);
+      toast.success(targetStatus === 'draft' ? "Saved to Drafts" : "Submitted for Approval");
     }
-  };
+    
+    // CRITICAL: Reset form and NOTIFY PARENT to refresh data
+    if (targetStatus !== 'draft') {
+      setFormData({
+        title: '', description: '', event_type: '', event_subtype: '',
+        scope: 'CENTRAL', location: '', capacity: '', poster_url: '',
+        event_date: '', start_time: '', end_time: ''
+      });
 
+      // Logic: If the parent passed a refresh function, call it now
+      if (typeof props.loadEvents === 'function') {
+        await props.loadEvents(); 
+      }
+
+      // Logic: If the parent passed a tab switcher, move to the status tracker
+      if (typeof props.setActiveTab === 'function') {
+        props.setActiveTab('status'); 
+      }
+    }
+  } catch (err) {
+    
+  } finally {
+    // Logic: This ensures the button text returns to normal even if the request fails
+    setIsSubmitting(false); 
+  }
+};
   return (
     <div className="tab-wrapper">
       <div className="card-header">

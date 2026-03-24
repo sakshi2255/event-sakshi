@@ -30,7 +30,7 @@ import MainLayout from "../view/layout/MainLayout";
 import StaffEventHub from "../view/pages/eventStaff/StaffEventHub";
 import StaffRegistrationsTab from "../view/pages/eventStaff/tabs/StaffRegistrationsTab";
 import Profile from '../view/pages/profile'; 
-
+import ViewEvents from '../view/pages/user/ViewEvents';
 import VerifyEmail from "../view/pages/VerifyEmail";
 const AppRoutes = () => {
   return (
@@ -112,6 +112,18 @@ const AppRoutes = () => {
       </MainLayout>
     </ProtectedRoute>
   }
+/>
+
+
+<Route 
+  path="/user/events" 
+  element={
+    <ProtectedRoute>
+      <RoleProtectedRoute allowedRoles={["USER"]}>
+        <MainLayout><ViewEvents /></MainLayout>
+      </RoleProtectedRoute>
+    </ProtectedRoute>
+  } 
 />
       <Route path="/" element={<Navigate to="/auth" replace />} />
     </Routes>

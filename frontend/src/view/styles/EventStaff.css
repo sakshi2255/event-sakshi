@@ -37,6 +37,21 @@
   text-transform: uppercase;
 }
 
+/* Ensure the camera is the only way to scan */
+/* If two video elements appear, hide the first one and show the second */
+#reader video:not(:last-child) {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    opacity: 0 !important;
+}
+
+#reader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
 .staff-stat-value {
   font-size: 32px;
   color: #1e293b;

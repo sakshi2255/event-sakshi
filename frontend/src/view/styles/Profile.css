@@ -129,14 +129,72 @@
 }
 
 /* RESPONSIVE BREAKPOINT */
-@media (min-width: 600px) {
-  .profile-page-wrapper { padding: 40px; }
-  .profile-overlap-section {
-    flex-direction: row;
-    padding: 0 40px;
-    align-items: flex-end;
+/* --- ENHANCED RESPONSIVE MEDIA QUERIES FOR PROFILE --- */
+
+/* Tablet View (max-width: 768px) */
+@media (max-width: 768px) {
+  .profile-card {
+    margin: 0 10px; /* Ensure card doesn't hit screen edges */
+    border-radius: 12px;
   }
-  .profile-details-container { padding: 0 40px 40px 40px; }
-  .info-grid { grid-template-columns: 1fr 1fr; }
-  .section-label { text-align: left; }
+
+  .profile-banner {
+    height: 120px; /* Reduce banner height to save vertical space */
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 30px; /* Scale down avatar for smaller screens */
+  }
+
+  .info-grid {
+    gap: 15px; /* Tighter gap for tablet data */
+  }
+}
+
+/* Phone View (max-width: 480px) */
+@media (max-width: 480px) {
+  .profile-page-wrapper {
+    padding: 10px; /* Minimum padding for small phones */
+    background-color: var(--card-bg); /* Match card for seamless mobile look */
+  }
+
+  .profile-title {
+    font-size: 20px;
+    text-align: center;
+    padding-left: 0;
+  }
+
+  .profile-card {
+    box-shadow: none; /* Flat design for mobile clarity */
+    border-radius: 0;
+  }
+
+  .profile-overlap-section {
+    margin-top: -40px;
+    gap: 10px;
+    text-align: center; /* Ensure badges and text are centered */
+  }
+
+  .role-badge {
+    font-size: 10px;
+    padding: 4px 12px;
+  }
+
+  .info-card {
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .info-value-wrapper {
+    font-size: 14px; /* Scaled down text for small phone widths */
+    word-break: break-word; /* Prevents long emails from breaking layout */
+  }
+
+  .status-badge-verified {
+    font-size: 12px;
+    padding: 4px 12px;
+    width: fit-content;
+  }
 }

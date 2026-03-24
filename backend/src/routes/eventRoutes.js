@@ -6,6 +6,8 @@ const { authenticate, authorize } = require("../middleware/auth.middleware");
 const taskController = require("../controllers/event/taskController");
 const managerStaffCtrl = require("../controllers/eventManager/staffController");
 
+const attendanceController = require("../controllers/event/attendance.controller");
+
 // --- Super Admin Routes ---
 router.get("/moderation", authenticate, authorize(["SUPER_ADMIN"]), eventController.getAllEventsForModeration);
 router.put("/moderate", authenticate, authorize(["SUPER_ADMIN"]), eventController.moderateEvent);
@@ -29,7 +31,9 @@ router.get("/approved", authenticate, eventController.getAllApprovedEvents);
 router.post("/lifecycle", authenticate, authorize(["ORG_ADMIN"]), eventController.handleEventLifecycle);
 router.post("/register", authenticate, authorize(["USER"]), regController.registerForEvent);
 router.get("/my-registrations", authenticate, authorize(["USER"]), regController.getMyRegistrations);
-
+// --- User Saved Events ---
+router.post("/toggle-save", authenticate, authorize(["USER"]), eventController.toggleSaveEvent);
+router.get("/my-saved", authenticate, authorize(["USER"]), eventController.getSavedEvents);
 // --- Event Manager & Staff Routes (Functional Tabs) ---
 // 1. Dashboard Stats
 router.get("/manager-stats", authenticate, authorize(["ORG_ADMIN", "EVENT_MANAGER"]), eventController.getManagerStats);
@@ -65,4 +69,13 @@ router.get("/assigned-events", authenticate, authorize(["EVENT_STAFF"]), manager
 router.get("/staff/event-team", authenticate, authorize(["EVENT_STAFF"]), managerStaffCtrl.getStaffList);
 // 3. View Registrations (Read-only for staff)
 router.get("/staff/:eventId/registrations", authenticate, authorize(["EVENT_STAFF"]), eventController.getEventRegistrations);
+router.post(
+    "/verify-attendance", 
+    authenticate, 
+    authorize(["ORG_ADMIN", "EVENT_STAFF"]), 
+    attendanceController.verifyTicket
+);
 module.exports = router;
+
+
+   

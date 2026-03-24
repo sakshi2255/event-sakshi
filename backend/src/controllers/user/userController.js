@@ -107,22 +107,47 @@ const deleteUser = async (req, res) => {
 // ==========================================
 // ---> START OF UPDATED CODE (NEW FUNCTION)
 // ==========================================
+// const getOrgMembers = async (req, res) => {
+//   try {
+//     // Simplified query: Fetch all active users whose role is exactly 'USER'
+//     const result = await pool.query(
+//       `SELECT id, full_name, email, role 
+//        FROM users 
+//        WHERE role = 'USER' AND is_active = TRUE 
+//        ORDER BY full_name ASC`
+//     );
+
+//     res.status(200).json(result.rows);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 const getOrgMembers = async (req, res) => {
-  try {
-    // Simplified query: Fetch all active users whose role is exactly 'USER'
-    const result = await pool.query(
-      `SELECT id, full_name, email, role 
-       FROM users 
-       WHERE role = 'USER' AND is_active = TRUE 
-       ORDER BY full_name ASC`
-    );
+    try {
+        // Log req.user to see exactly what the middleware is providing
+        console.log("User Data from Token:", req.user);
 
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+        // Make sure this matches your token payload (orgId vs organization_id)
+        const orgId = req.user.organization_id || req.user.orgId;
+
+        if (!orgId) {
+            return res.status(400).json({ message: "Organization ID missing from token" });
+        }
+
+        const query = `
+            SELECT id, full_name, email, role 
+            FROM users 
+            WHERE organization_id = $1 
+            AND role = 'USER' 
+            ORDER BY full_name ASC`;
+
+        const result = await pool.query(query, [orgId]);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("DATABASE ERROR:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 };
-
 const getProfile = async (req, res) => {
   // req.user.id is securely provided by your existing auth.middleware.js
   try {

@@ -92,7 +92,7 @@
 }
 
 /* Mobile View: Stack columns */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
     gap: 32px;
@@ -101,7 +101,7 @@
   .event-card {
     padding: 24px;
   }
-}
+} */
 
 .submit-btn, .secondary-btn {
   height: 10px; /* Fixed height for consistency */
@@ -131,4 +131,62 @@
 .submit-btn:hover, .secondary-btn:hover {
   transform: translateY(-1px);
   opacity: 0.9;
+}
+
+/* --- RESPONSIVE MEDIA QUERIES FOR EVENT FORMS --- */
+
+/* Tablet View (max-width: 768px) */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px 12px; /* Reduce outer spacing */
+  }
+
+  .event-card {
+    padding: 30px; /* Tighter internal padding */
+    border-radius: 18px; 
+  }
+
+  .card-header {
+    margin-bottom: 30px;
+    text-align: center; /* Center header for balanced look */
+  }
+
+  .submit-btn, .secondary-btn {
+    height: 45px; /* Fixed the 10px typo for usability */
+    padding: 0 25px;
+  }
+}
+
+/* Phone View (max-width: 480px) */
+@media (max-width: 480px) {
+  .page-container {
+    padding: 10px 0; /* Remove side padding to maximize card width */
+    background-color: #fff; /* Blend card with background for app-like feel */
+  }
+
+  .event-card {
+    padding: 20px 16px;
+    border-radius: 0; /* Full-width card on small phones */
+    box-shadow: none; /* Flat design for mobile clarity */
+  }
+
+  .card-header h2 {
+    font-size: 20px; /* Smaller font for narrow screens */
+  }
+
+  .event-form {
+    gap: 20px; /* Reduce vertical gap between inputs */
+  }
+
+  .form-input, .form-textarea, .form-select {
+    padding: 12px;
+    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+  }
+
+  /* Stack buttons vertically on phones for better thumb-reach */
+  .submit-btn, .secondary-btn {
+    width: 100%; 
+    height: 50px; /* Larger touch target for mobile */
+    margin-bottom: 10px;
+  }
 }

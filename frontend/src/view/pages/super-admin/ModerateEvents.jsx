@@ -56,21 +56,22 @@ const ModerateEvents = () => {
   if (loading) return <div style={{padding: '20px'}}>Loading Moderation Queue...</div>;
 
   return (
-    <div className="mgmt-card">
-      {/* --- START OF MILAP'S MERGED CODE (Header UI) --- */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-        <h2 className="db-title" style={{ margin: 0 }}>Event Moderation Queue</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
+    <div className="db-container no-horizontal-scroll">
+      <h2 className="db-title">Event Moderation Queue</h2>
+
+      {/* --- NEW ADDED START: CONSISTENT RESPONSIVE SEARCH & FILTER --- */}
+      <div className="mgmt-card search-filter-container">
+        <div className="search-input-group">
           <input 
             className="mgmt-input" 
-            style={{ width: '220px', marginBottom: 0 }}
-            placeholder="Search event title..." 
+            placeholder="🔍 Search event title..." 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
           />
+        </div>
+        <div className="filter-select-group">
           <select 
             className="mgmt-input" 
-            style={{ width: '140px', marginBottom: 0 }}
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -78,49 +79,53 @@ const ModerateEvents = () => {
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="draft">Drafts</option>
-  <option value="cancelled">Cancelled</option>
+            <option value="cancelled">Cancelled</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>
-      {/* --- END OF MILAP'S MERGED CODE --- */}
+      {/* --- NEW ADDED END --- */}
 
-      <div style={{overflowX: 'auto'}}>
-        <table className="mgmt-table">
-          <thead>
-            <tr>
-              <th className="mgmt-th">Organization</th>
-              <th className="mgmt-th">Event Title</th>
-              <th className="mgmt-th">Date</th>
-              <th className="mgmt-th">Status</th>
-              <th className="mgmt-th">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.length > 0 ? events.map(event => (
-              <tr key={event.id}>
-                <td className="mgmt-td" style={{fontWeight: 'bold'}}>{event.organization_name || "N/A"}</td>
-                <td className="mgmt-td">{event.title}</td>
-                <td className="mgmt-td">{new Date(event.event_date).toLocaleDateString()}</td>
-                <td className="mgmt-td">
-                  <span className={`status-badge status-${event.status}`}>
-                    {event.status}
-                  </span>
-                </td>
-                <td className="mgmt-td">
-                  {event.status === 'pending' && (
-                    <div style={{display: 'flex', gap: '10px'}}>
-                      <button onClick={() => handleModeration(event.id, 'approved')} className="approve-btn">Approve</button>
-                      <button onClick={() => handleModeration(event.id, 'rejected')} className="reject-btn">Reject</button>
-                    </div>
-                  )}
-                </td>
+      <div className="mgmt-card table-section-lock">
+        {/* --- NEW ADDED START: INTERNAL SCROLL SHIELD --- */}
+        <div className="responsive-table-wrapper">
+          <table className="mgmt-table">
+            <thead>
+              <tr>
+                <th className="mgmt-th">Organization</th>
+                <th className="mgmt-th">Event Title</th>
+                <th className="mgmt-th">Date</th>
+                <th className="mgmt-th">Status</th>
+                <th className="mgmt-th">Actions</th>
               </tr>
-            )) : (
-              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>No events found.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {events.length > 0 ? events.map(event => (
+                <tr key={event.id}>
+                  <td className="mgmt-td" style={{fontWeight: 'bold'}}>{event.organization_name || "N/A"}</td>
+                  <td className="mgmt-td">{event.title}</td>
+                  <td className="mgmt-td">{new Date(event.event_date).toLocaleDateString()}</td>
+                  <td className="mgmt-td">
+                    <span className={`status-badge status-${event.status}`}>
+                      {event.status}
+                    </span>
+                  </td>
+                  <td className="mgmt-td">
+                    {event.status === 'pending' && (
+                      <div className="action-btns-flex">
+                        <button onClick={() => handleModeration(event.id, 'approved')} className="approve-btn">Approve</button>
+                        <button onClick={() => handleModeration(event.id, 'rejected')} className="reject-btn">Reject</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>No events found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {/* --- NEW ADDED END --- */}
       </div>
     </div>
   );

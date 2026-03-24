@@ -10,18 +10,16 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // NEW: Mobile drawer state
   const [isAssignedAsManager, setIsAssignedAsManager] = useState(false);
 
-  // 1. Identify if we are currently in a Manager-related route
   const isManagerView = location.pathname.includes('/manager') || location.pathname.includes('event-manager');
 
-  // 2. Check if the Org Admin is actually assigned to any events as a manager
   useEffect(() => {
     const checkManagerStatus = async () => {
       if (user?.role === 'ORG_ADMIN') {
         try {
           const res = await api.get('/events/managed-events');
-          // If they have at least one event assigned, they can use the Manager View
           const hasEvents = res.data.success ? res.data.data.length > 0 : res.data.length > 0;
           setIsAssignedAsManager(hasEvents);
         } catch (err) {
@@ -33,6 +31,11 @@ const MainLayout = ({ children }) => {
     checkManagerStatus();
   }, [user]);
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+
   const handleLogout = () => {
     logout();
     toast.success("Signed out successfully");
@@ -40,17 +43,32 @@ const MainLayout = ({ children }) => {
   };
 
   return (
-    <div className="main-wrapper">
-      <aside className="sidebar-base" style={{ width: isCollapsed ? '80px' : '280px' }}>
+    <div className={`main-wrapper ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
+      {/* NEW: Mobile Toggle Button */}
+      <button 
+        className="mobile-nav-toggle" 
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      >
+        {isMobileMenuOpen ? '✕' : '☰'}
+      </button>
+
+      {/* NEW: Background Overlay for Mobile */}
+      {isMobileMenuOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
+      <aside 
+        className={`sidebar-base ${isMobileMenuOpen ? 'show-mobile' : ''}`} 
+        style={{ width: isCollapsed ? '80px' : '280px' }}
+      >
         <div className="sidebar-logo-area">
           {!isCollapsed && <h2 className="sidebar-logo-text">SOEMS</h2>}
-          <button onClick={() => setIsCollapsed(!isCollapsed)} className="sidebar-collapse-btn">
+          <button onClick={() => setIsCollapsed(!isCollapsed)} className="sidebar-collapse-btn desktop-only">
             {isCollapsed ? '⮕' : '⬅'}
           </button>
         </div>
 
         <nav className="sidebar-nav">
-          {/* 3. SWITCH VIEW BUTTON: Only for ORG_ADMINs who are also Managers */}
           {user?.role === 'ORG_ADMIN' && isAssignedAsManager && (
             <div style={{ padding: '0 15px', marginBottom: '15px' }}>
               <button
@@ -61,72 +79,97 @@ const MainLayout = ({ children }) => {
                   fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                 }}
               >
-                {isCollapsed ? '🔄' : (isManagerView ? '🏢 Admin Dashboard' : '👔 Manager Dashboard')}
+                {isCollapsed ? '🔄' : (isManagerView ? '🏢 Admin View' : '👔 Manager View')}
               </button>
             </div>
           )}
 
-          {/* --- ADMIN / GENERAL LINKS --- */}
-          {(!isManagerView) && (
+          {/* {!isManagerView && (
             <>
               <NavLink 
-  to={
-    user?.role === 'SUPER_ADMIN' ? '/dashboard/super-admin' : 
-    user?.role === 'ORG_ADMIN' ? '/dashboard/org-admin' : 
-    user?.role === 'EVENT_STAFF' ? '/dashboard/event-staff' : 
-    user?.role === 'EVENT_MANAGER' ? '/dashboard/event-manager' :
-    '/dashboard/user'
-  } 
-  className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}
->
-  <span className="sidebar-icon">📊</span>
-  {!isCollapsed && "Dashboard Overview"}
-</NavLink>
+                to={
+                  user?.role === 'SUPER_ADMIN' ? '/dashboard/super-admin' : 
+                  user?.role === 'ORG_ADMIN' ? '/dashboard/org-admin' : 
+                  user?.role === 'EVENT_STAFF' ? '/dashboard/event-staff' : 
+                  user?.role === 'EVENT_MANAGER' ? '/dashboard/event-manager' :
+                  '/dashboard/user'
+                } 
+                className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}
+              >
+                <span className="sidebar-icon">📊</span>
+                {!isCollapsed && "Dashboard"}
+              </NavLink>
 
               {(user?.role === 'SUPER_ADMIN' || user?.role === 'ORG_ADMIN') && (
                 <NavLink to="/manage-events" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <span className="sidebar-icon">{user?.role === 'SUPER_ADMIN' ? '📢' : '📅'}</span>
-                  {!isCollapsed && (user?.role === 'SUPER_ADMIN' ? "Moderate Events" : "Events")}
+                  {!isCollapsed && (user?.role === 'SUPER_ADMIN' ? "Moderation" : "Events")}
                 </NavLink>
               )}
 
               {user?.role === 'ORG_ADMIN' && (
                 <NavLink to="/org/manage-members" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                   <span className="sidebar-icon">🛡️</span>
-                  {!isCollapsed && "Role Management"}
+                  {!isCollapsed && "Roles"}
+                </NavLink>
+              )}
+            </>
+          )} */}
+{!isManagerView && (
+            <>
+              <NavLink 
+                to={
+                  user?.role === 'SUPER_ADMIN' ? '/dashboard/super-admin' : 
+                  user?.role === 'ORG_ADMIN' ? '/dashboard/org-admin' : 
+                  user?.role === 'EVENT_STAFF' ? '/dashboard/event-staff' : 
+                  user?.role === 'EVENT_MANAGER' ? '/dashboard/event-manager' :
+                  '/dashboard/user'
+                } 
+                className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}
+              >
+                <span className="sidebar-icon">📊</span>
+                {!isCollapsed && "Dashboard"}
+              </NavLink>
+
+              {/* UPDATED: Unified Events Link for all roles */}
+              <NavLink 
+                to={user?.role === 'USER' ? '/user/events' : '/manage-events'} 
+                className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}
+              >
+                <span className="sidebar-icon">{user?.role === 'SUPER_ADMIN' ? '📢' : '📅'}</span>
+                {!isCollapsed && (user?.role === 'SUPER_ADMIN' ? "Moderation" : "Events")}
+              </NavLink>
+
+              {user?.role === 'ORG_ADMIN' && (
+                <NavLink to="/org/manage-members" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                  <span className="sidebar-icon">🛡️</span>
+                  {!isCollapsed && "Roles"}
                 </NavLink>
               )}
             </>
           )}
           {user?.role === 'SUPER_ADMIN' && (
             <>
-              {/* ... keep existing links ... */}
-
-              {/* --- START OF MILAP'S CODE --- */}
               <NavLink to="/superadmin/organizations" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">🏢</span>
                 {!isCollapsed && "Institutions"}
               </NavLink>
-
               <NavLink to="/superadmin/users" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">👥</span>
-                {!isCollapsed && "System Users"}
+                {!isCollapsed && "Users"}
               </NavLink>
-
               <NavLink to="/admin/logs" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">📜</span>
-                {!isCollapsed && "Audit Logs"}
+                {!isCollapsed && "Audit"}
               </NavLink>
-              {/* --- END OF MILAP'S CODE --- */}
             </>
           )}
 
-          {/* --- MANAGER SPECIFIC LINKS --- */}
           {(user?.role === 'EVENT_MANAGER' || (user?.role === 'ORG_ADMIN' && isManagerView)) && (
             <>
               <NavLink to="/dashboard/event-manager" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">📊</span>
-                {!isCollapsed && " Dashboard Overview"}
+                {!isCollapsed && "Manager Home"}
               </NavLink>
               <NavLink to="/manager/event-hub" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">📅</span>
@@ -134,36 +177,28 @@ const MainLayout = ({ children }) => {
               </NavLink>
               <NavLink to="/manager/manage-staff" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">👥</span>
-                {!isCollapsed && "Staff Onboarding"}
+                {!isCollapsed && "Onboarding"}
               </NavLink>
               <NavLink to="/manager/tasks" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
                 <span className="sidebar-icon">📋</span>
-                {!isCollapsed && "Task Assignment"}
+                {!isCollapsed && "Tasks"}
               </NavLink>
             </>
           )}
-          {/* --- EVENT STAFF SIDEBAR LINKS --- */}
 {user?.role === 'EVENT_STAFF' && (
-  <>
-   
-    
-    <NavLink 
-      to="/staff/event-hub" 
-      className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}
-    >
-      <span className="sidebar-icon">📅</span>
-      {!isCollapsed && "Events"}
-    </NavLink>
-  </>
-)}
-
+            <>
+              <NavLink to="/staff/event-hub" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
+                <span className="sidebar-icon">📅</span>
+                {!isCollapsed && "Assigned Events"}
+              </NavLink>
+              {/* Optional: Add Task shortcut if you have a separate staff task page */}
+            </>
+          )}
           <NavLink to="/profile" className={({ isActive }) => isActive ? "sidebar-link active" : "sidebar-link"}>
             <span className="sidebar-icon">👤</span>
-            {!isCollapsed && "My Profile"}
+            {!isCollapsed && "Profile"}
           </NavLink>
         </nav>
-
-
 
         <div className="sidebar-footer">
           <button onClick={handleLogout} className={isCollapsed ? "logout-btn-small" : "logout-btn-full"}>
@@ -176,14 +211,11 @@ const MainLayout = ({ children }) => {
       <div className="content-container">
         <header className="app-header">
           <div className="header-left">
-            <span className="role-tag" style={{ backgroundColor: isManagerView ? '#47B599' : '' }}>
-              {/* 4. DYNAMIC TAG: Only shows 'Acting' if the user is an Admin stepping into Manager shoes */}
-              {isManagerView && user?.role === 'ORG_ADMIN'
-                ? 'EVENT MANAGER (Acting)'
-                : user?.role?.replace('_', ' ')}
+            <span className="role-tag">
+              {isManagerView && user?.role === 'ORG_ADMIN' ? 'ACTING MANAGER' : user?.role?.replace('_', ' ')}
             </span>
           </div>
-          <div className="header-right">Welcome back, <strong>{user?.full_name}</strong></div>
+          <div className="header-right"><strong>{user?.full_name}</strong></div>
         </header>
         <main className="main-scroll-area">{children}</main>
       </div>

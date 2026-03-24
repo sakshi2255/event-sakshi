@@ -206,7 +206,75 @@
 }
 
 /* Mobile Responsiveness for buttons */
-@media (max-width: 600px) {
+/* --- ENHANCED RESPONSIVE MEDIA QUERIES FOR EVENT FORM --- */
+
+/* Tablet View (max-width: 768px) */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 20px 12px; /* Reduce container padding for more space */
+  }
+
+  .event-card {
+    padding: 30px; /* Slightly tighter padding inside the card */
+    border-radius: 16px; /* Modern, smaller radius for tablet */
+  }
+
+  .card-header {
+    margin-bottom: 30px;
+    text-align: center; /* Center header content for better balance */
+  }
+
+  .event-form {
+    gap: 24px; /* Tighten vertical gap between groups */
+  }
+
+  .modal-content {
+    max-width: 90%; /* Ensure modal doesn't hit screen edges */
+    padding: 20px;
+  }
+}
+
+/* Phone View (max-width: 480px) */
+@media (max-width: 480px) {
+  .page-container {
+    padding: 10px 8px;
+    background-color: #fff; /* Remove background contrast to feel like a full-screen app */
+  }
+
+  .event-card {
+    padding: 20px 15px;
+    box-shadow: none; /* Flat design for mobile to maximize space */
+    border-radius: 0; /* Full-width look */
+  }
+
+  .card-header h2 {
+    font-size: 20px; /* Scale down heading */
+  }
+
+  .card-header p {
+    font-size: 13px;
+  }
+
+  .form-input, .form-textarea, .form-select {
+    padding: 12px; /* Comfortable but compact padding */
+    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+  }
+
+  .input-group label {
+    font-size: 13px;
+  }
+
   .form-actions {
-    flex-direction: column; /* Stack buttons on small screens */
-  }}
+    gap: 10px; /* Tighter gap between stacked buttons */
+  }
+
+  .form-actions button {
+    height: 48px; /* Slightly smaller but still touch-friendly */
+    font-size: 14px;
+  }
+
+  .submit-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
